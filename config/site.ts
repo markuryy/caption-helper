@@ -5,13 +5,13 @@ export const siteConfig = {
   description: "A project by Markury",
   navItems: [
     {
-      label: "Home",
+      label: "Captioning Tools",
       href: "/",
     },
   ],
   navMenuItems: [
     {
-      label: "Home",
+      label: "Captioning Tools",
       href: "/",
     },
   ],

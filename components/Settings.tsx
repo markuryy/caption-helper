@@ -52,7 +52,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
             </Tooltip>
           </div>
           <p className="text-sm mb-4">
-            Don&apos;t have a Groq API key? Get one
+            Don&apos;t have a Groq API key? Get one&nbsp;
             <a
               className="text-blue-500 hover:underline"
               href="https://console.groq.com/keys"
@@ -76,7 +76,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
             </Tooltip>
           </div>
           <p className="text-sm mb-4">
-            Don&apos;t have an OpenAI API key? Get one
+            Don&apos;t have an OpenAI API key? Get one&nbsp;
             <a
               className="text-blue-500 hover:underline"
               href="https://platform.openai.com/api-keys"
