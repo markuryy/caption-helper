@@ -1,5 +1,4 @@
 import JSZip from "jszip";
-
 import { ImageData } from "./types";
 
 export async function processUploadedFiles(
@@ -86,7 +85,7 @@ export async function exportImagesAndCaptions(
 ): Promise<Blob> {
   const zip = new JSZip();
 
-  images.forEach((image) => {
+  images.forEach((image, index) => {
     const baseName = image.name.split(".")[0];
 
     if (includeImages) {

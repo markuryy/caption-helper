@@ -11,6 +11,7 @@ import {
   LuSettings,
   LuUndo,
   LuDownload,
+  LuTrash2,
 } from "react-icons/lu";
 
 import Sidebar from "@/components/Sidebar";
@@ -208,6 +209,19 @@ export default function Home() {
     }
   };
 
+  const handleDeleteImage = () => {
+    if (selectedIndex !== null) {
+      const newImages = images.filter((_, index) => index !== selectedIndex);
+      setImages(newImages);
+      if (newImages.length === 0) {
+        setSelectedIndex(null);
+      } else if (selectedIndex >= newImages.length) {
+        setSelectedIndex(newImages.length - 1);
+      }
+      toast.success("Image deleted successfully");
+    }
+  };
+
   return (
     <section className="flex flex-col items-center justify-center p-4">
       <Toaster />
@@ -278,6 +292,15 @@ export default function Home() {
                       image={images[selectedIndex]}
                       onCrop={handleCropImage}
                     />
+                    <Button
+                      size="sm"
+                      color="danger"
+                      onClick={handleDeleteImage}
+                      startContent={<LuTrash2 />}
+                      className="mt-2"
+                    >
+                      Delete Image
+                    </Button>
                   </div>
                   <div className="w-full md:w-1/2 pl-4 flex flex-col">
                     <CaptionEditor
