@@ -1,8 +1,6 @@
-
-
 # Caption Helper
 
-Caption Helper is a powerful tool designed to assist in creating, managing, and enhancing captions for images, particularly for use in Stable Diffusion training. Created by Markury (GitHub: [markuryy](https://github.com/markuryy)).
+Caption Helper is a simple tool designed to assist in creating, managing, and enhancing captions for images, particularly for use in Stable Diffusion training. 
 
 ## Features
 
