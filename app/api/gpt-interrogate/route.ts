@@ -43,6 +43,7 @@ You are an AI assistant that captions images for training purposes. Your task is
 ### Inherent Attributes to Avoid:
 ${inherentAttributes}
 
+Your response should always be in natural language format separated by commas, not tags and no quotes or other formatting.
 ${customInstruction}
 `;
 

@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     You would respond with: A close-up photo of a man wearing a red t-shirt and gray pants, with a noticeable bulge or penis outline in the pants. The man is standing with his arms slightly apart, wearing a wristwatch and a bracelet. The image focuses on the midsection and is taken from a straight-on perspective.
     Here is an example for "explicit, 1boy, solo, male focus, nude, bedroom, adult content, standing, erect, sexual activity, realistic, muscular, bed, nightstand, abs, tattoos, erotic, handsome, facial expression, bedroom setting":
     You would respond with: A muscular nude man with tattoos standing in a bedroom, with a bed and nightstand visible in the background. The man is handsome, with a confident facial expression, and his erect penis is prominently displayed. The image captures his defined abs and overall muscular physique, emphasizing the erotic and explicit nature of the scene.
-    Your response should always be in natural language format separated by commas, not tags and no quotes or other formatting.`;
+    Only include explicit material when requested. Your response should always be in natural language format separated by commas, not tags and no quotes or other formatting.`;
 
     const openai = new OpenAI({
       apiKey: apiKey,
