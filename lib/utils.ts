@@ -79,6 +79,39 @@ async function processImageFile(file: File): Promise<ImageData> {
   });
 }
 
+export async function downscaleImage(base64Image: string, maxSize: number): Promise<string> {
+  const img = new Image();
+  return new Promise((resolve, reject) => {
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, width, height);
+
+      resolve(canvas.toDataURL('image/jpeg').split(',')[1]);
+    };
+    img.onerror = reject;
+    img.src = `data:image/jpeg;base64,${base64Image}`;
+  });
+}
+
 export async function exportImagesAndCaptions(
   images: ImageData[],
   includeImages: boolean,

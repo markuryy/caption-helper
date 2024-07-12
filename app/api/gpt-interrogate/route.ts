@@ -1,21 +1,38 @@
 import OpenAI from "openai";
+import sharp from 'sharp';
 
 export const dynamic = "force-dynamic";
 
+async function downscaleImage(base64Image: string, maxSize: number): Promise<string> {
+  const buffer = Buffer.from(base64Image, 'base64');
+  const image = sharp(buffer);
+  const metadata = await image.metadata();
+
+  if (metadata.width && metadata.height && (metadata.width > maxSize || metadata.height > maxSize)) {
+    const resizedImage = await image
+      .resize(maxSize, maxSize, { fit: 'inside' })
+      .toBuffer();
+    return resizedImage.toString('base64');
+  }
+
+  return base64Image;
+}
+
 export async function POST(req: Request) {
   try {
-    const {
-      image,
-      apiKey,
-      customToken,
-      customInstruction,
-      inherentAttributes,
-    } = await req.json();
+    const { image, apiKey, customToken, customInstruction, inherentAttributes } = await req.json();
 
     const openai = new OpenAI({ apiKey });
 
-    const systemPrompt = `
-You are an AI assistant that captions images for training purposes. Your task is to create clear, detailed captions that incorporate the custom token \`${customToken}\`. The following guide outlines the captioning approach:
+    let systemPrompt = `
+You are an AI assistant that captions images for training purposes. Your task is to create clear, detailed captions that`;
+
+    if (customToken) {
+      systemPrompt += ` incorporate the custom token \`${customToken}\`.`;
+    }
+
+    systemPrompt += `
+The following guide outlines the captioning approach:
 
 ### Captioning Principles:
 1. **Avoid Making Main Concepts Variable**: Exclude specific traits of the main teaching point to ensure it remains consistent across the dataset.
@@ -25,7 +42,7 @@ You are an AI assistant that captions images for training purposes. Your task is
    - Specific tags (e.g., "ohwxman") can reduce impact on the general class while creating strong associations.
 
 ### Caption Structure:
-1. **Globals**: Rare tokens or uniform tags (e.g., \`${customToken}\`).
+1. **Globals**: Rare tokens or uniform tags${customToken ? ` (e.g., \`${customToken}\`)` : ''}.
 1.5. **Natural Language Description**: A concise description shorter than a sentence but longer than a tag describing the entire scene.
 2. **Type/Perspective**:
    - Broad description of the image type and perspective (e.g., "photograph," "full body," "from side").
@@ -39,13 +56,22 @@ You are an AI assistant that captions images for training purposes. Your task is
    - Layered background context (e.g., "brown couch," "wooden floor," "refrigerator in background").
 7. **Loose Associations**:
    - Relevant associations or emotions (e.g., "dreary environment").
+`;
 
+    if (inherentAttributes) {
+      systemPrompt += `
 ### Inherent Attributes to Avoid:
 ${inherentAttributes}
+`;
+    }
 
-Your response should always be in natural language format separated by commas, not tags and no quotes or other formatting.
+    if (customInstruction) {
+      systemPrompt += `
 ${customInstruction}
 `;
+    }
+
+    const downscaledImage = await downscaleImage(image, 1024);
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -64,7 +90,7 @@ ${customInstruction}
             {
               type: "image_url",
               image_url: {
-                url: `data:image/jpeg;base64,${image}`,
+                url: `data:image/jpeg;base64,${downscaledImage}`,
               },
             },
           ],
@@ -81,7 +107,6 @@ ${customInstruction}
     });
   } catch (error) {
     console.error("Error processing request:", error);
-
     return new Response("Failed to process request", { status: 500 });
   }
 }
