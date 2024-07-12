@@ -37,6 +37,12 @@ export default function Home() {
     customInstruction: "",
     inherentAttributes: "",
   });
+  const [isLoading, setIsLoading] = useState({
+    enhance: false,
+    extend: false,
+    interrogate: false,
+    export: false,
+  });
 
   useEffect(() => {
     const savedGroqApiKey = localStorage.getItem("groqApiKey");
@@ -80,6 +86,7 @@ export default function Home() {
   };
 
   const handleExport = async (options: ExportOptions) => {
+    setIsLoading((prev) => ({ ...prev, export: true }));
     try {
       let exportImages = images;
 
@@ -105,6 +112,8 @@ export default function Home() {
       toast.success("Captions exported as ZIP file");
     } catch (error) {
       toast.error("Failed to export captions");
+    } finally {
+      setIsLoading((prev) => ({ ...prev, export: false }));
     }
   };
 
@@ -113,18 +122,20 @@ export default function Home() {
   ) => {
     if (selectedIndex === null) return;
 
+    setIsLoading((prev) => ({ ...prev, [action]: true }));
+
     const groqApiKey = localStorage.getItem("groqApiKey");
     const openaiApiKey = localStorage.getItem("openaiApiKey");
 
     if (!groqApiKey && action !== "interrogate") {
       toast.error("Groq API key not found. Please add it in the settings.");
-
+      setIsLoading((prev) => ({ ...prev, [action]: false }));
       return;
     }
 
     if (!openaiApiKey && action === "interrogate") {
       toast.error("OpenAI API key not found. Please add it in the settings.");
-
+      setIsLoading((prev) => ({ ...prev, [action]: false }));
       return;
     }
 
@@ -170,6 +181,8 @@ export default function Home() {
     } catch (error) {
       console.error(`Error ${action}ing caption:`, error);
       toast.error(`Failed to ${action} caption`);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, [action]: false }));
     }
   };
 
@@ -231,6 +244,7 @@ export default function Home() {
             <Button
               startContent={<LuDownload />}
               onClick={() => setIsExportOptionsOpen(true)}
+              isLoading={isLoading.export}
             >
               Export
             </Button>
@@ -275,6 +289,7 @@ export default function Home() {
                         size="sm"
                         startContent={<LuSparkles />}
                         onClick={() => handleCaptionAction("enhance")}
+                        isLoading={isLoading.enhance}
                       >
                         Enhance
                       </Button>
@@ -282,6 +297,7 @@ export default function Home() {
                         size="sm"
                         startContent={<LuPlus />}
                         onClick={() => handleCaptionAction("extend")}
+                        isLoading={isLoading.extend}
                       >
                         Extend
                       </Button>
@@ -289,6 +305,7 @@ export default function Home() {
                         size="sm"
                         startContent={<LuBrainCircuit />}
                         onClick={() => handleCaptionAction("interrogate")}
+                        isLoading={isLoading.interrogate}
                       >
                         Interrogate
                       </Button>
