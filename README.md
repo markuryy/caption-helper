@@ -2,6 +2,11 @@
 
 Caption Helper is a simple tool designed to assist in creating, managing, and enhancing captions for images, particularly for use in Stable Diffusion training. 
 
+## Preview
+
+![Preview](public/preview.jpeg)
+
+
 ## Features
 
 - Image upload: Drag and drop or select multiple images

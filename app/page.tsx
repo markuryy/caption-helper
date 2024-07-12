@@ -292,15 +292,15 @@ export default function Home() {
                       image={images[selectedIndex]}
                       onCrop={handleCropImage}
                     />
-                    <Button
-                      size="sm"
-                      color="danger"
-                      onClick={handleDeleteImage}
-                      startContent={<LuTrash2 />}
-                      className="mt-2"
-                    >
-                      Delete Image
-                    </Button>
+                    <div className="flex justify-end mt-2 mr-2">
+                      <Button
+                        isIconOnly
+                        color="danger"
+                        onClick={handleDeleteImage}
+                        startContent={<LuTrash2 />}
+                      >
+                      </Button>
+                    </div>
                   </div>
                   <div className="w-full md:w-1/2 pl-4 flex flex-col">
                     <CaptionEditor
