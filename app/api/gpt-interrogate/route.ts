@@ -25,10 +25,10 @@ export async function POST(req: Request) {
     const openai = new OpenAI({ apiKey });
 
     let systemPrompt = `
-You are an AI assistant that captions images for training purposes. Your task is to create clear, detailed captions that`;
+You are an AI assistant that captions images for training purposes. Your task is to create clear, detailed captions`;
 
     if (customToken) {
-      systemPrompt += ` incorporate the custom token \`${customToken}\`.`;
+      systemPrompt += ` that incorporate the custom token "${customToken}" at the beginning.`;
     }
 
     systemPrompt += `
@@ -39,10 +39,10 @@ The following guide outlines the captioning approach:
 2. **Include Detailed Descriptions**: Describe everything except the primary concept being taught.
 3. **Use Generic Classes as Tags**:
    - Broad tags (e.g., "man") can bias the entire class toward the training data.
-   - Specific tags (e.g., "ohwxman") can reduce impact on the general class while creating strong associations.
+   - Specific tags (e.g., character name or unique string like "m4n") can reduce impact on the general class while creating strong associations.
 
 ### Caption Structure:
-1. **Globals**: Rare tokens or uniform tags${customToken ? ` (e.g., \`${customToken}\`)` : ''}.
+1. **Globals**: Rare tokens or uniform tags${customToken ? ` (e.g., ${customToken})` : ''}.
 1.5. **Natural Language Description**: A concise description shorter than a sentence but longer than a tag describing the entire scene.
 2. **Type/Perspective**:
    - Broad description of the image type and perspective (e.g., "photograph," "full body," "from side").
@@ -56,6 +56,7 @@ The following guide outlines the captioning approach:
    - Layered background context (e.g., "brown couch," "wooden floor," "refrigerator in background").
 7. **Loose Associations**:
    - Relevant associations or emotions (e.g., "dreary environment").
+Combine all of these to create a detailed caption for the image. Do not include any other text or formatting.
 `;
 
     if (inherentAttributes) {
@@ -85,7 +86,7 @@ ${customInstruction}
           content: [
             {
               type: "text",
-              text: "Here is an image for you to describe. Please describe the image in detail and ensure it adheres to the guidelines set out in the System Prompt. Do not include any uncertainty (i.e. I dont know, appears, seems) or any other text. Focus exclusively on visible elements and not conceptual ones. Thank you very much for your help!",
+              text: "Here is an image for you to describe. Please describe the image in detail and ensure it adheres to the guidelines. Do not include any uncertainty (i.e. I dont know, appears, seems) or any other text. Focus exclusively on visible elements and not conceptual ones. Thank you very much for your help!",
             },
             {
               type: "image_url",

@@ -59,19 +59,19 @@ export default function GptOptionsModal({
         <ModalHeader>GPT Captioning Options</ModalHeader>
         <ModalBody>
           <Input
-            label="Custom Token (Optional)"
+            label="Custom Token (Recommended but optional)"
             placeholder="Enter custom token"
             value={customToken}
             onChange={(e) => setCustomToken(e.target.value)}
           />
           <Textarea
-            label="Custom Instruction"
+            label="Custom Instruction (Optional)"
             placeholder="Enter custom instruction"
             value={customInstruction}
             onChange={(e) => setCustomInstruction(e.target.value)}
           />
           <Textarea
-            label="Inherent Attributes"
+            label="Inherent Attributes (Optional)"
             placeholder="Enter inherent attributes to avoid"
             value={inherentAttributes}
             onChange={(e) => setInherentAttributes(e.target.value)}
