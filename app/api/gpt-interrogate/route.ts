@@ -8,11 +8,18 @@ async function downscaleImage(base64Image: string, maxSize: number): Promise<str
   const image = sharp(buffer);
   const metadata = await image.metadata();
 
-  if (metadata.width && metadata.height && (metadata.width > maxSize || metadata.height > maxSize)) {
-    const resizedImage = await image
-      .resize(maxSize, maxSize, { fit: 'inside' })
-      .toBuffer();
-    return resizedImage.toString('base64');
+  if (metadata.width && metadata.height) {
+    const longerAxis = Math.max(metadata.width, metadata.height);
+    if (longerAxis > maxSize) {
+      const resizedImage = await image
+        .resize({
+          width: metadata.width > metadata.height ? maxSize : undefined,
+          height: metadata.height > metadata.width ? maxSize : undefined,
+          fit: 'inside'
+        })
+        .toBuffer();
+      return resizedImage.toString('base64');
+    }
   }
 
   return base64Image;
@@ -20,7 +27,7 @@ async function downscaleImage(base64Image: string, maxSize: number): Promise<str
 
 export async function POST(req: Request) {
   try {
-    const { image, apiKey, customToken, customInstruction, inherentAttributes } = await req.json();
+    const { image, apiKey, customToken, customInstruction, inherentAttributes, currentCaption } = await req.json();
 
     const openai = new OpenAI({ apiKey });
 
@@ -74,6 +81,14 @@ ${customInstruction}
 
     const downscaledImage = await downscaleImage(image, 1024);
 
+    let userMessage = "Here is an image for you to describe. Please describe the image in detail and ensure it adheres to the guidelines. Do not include any uncertainty (i.e. I dont know, appears, seems) or any other text. Focus exclusively on visible elements and not conceptual ones.";
+
+    if (currentCaption) {
+      userMessage += ` The user says this about the image: "${currentCaption}". Consider this information while creating your caption, but don't simply repeat it. Provide your own detailed description.`;
+    }
+
+    userMessage += " Thank you very much for your help!";
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -86,7 +101,7 @@ ${customInstruction}
           content: [
             {
               type: "text",
-              text: "Here is an image for you to describe. Please describe the image in detail and ensure it adheres to the guidelines. Do not include any uncertainty (i.e. I dont know, appears, seems) or any other text. Focus exclusively on visible elements and not conceptual ones. Thank you very much for your help!",
+              text: userMessage,
             },
             {
               type: "image_url",

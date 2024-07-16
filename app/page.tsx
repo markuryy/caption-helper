@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -154,6 +155,7 @@ export default function Home() {
           body: JSON.stringify({
             image: images[selectedIndex].content,
             apiKey: openaiApiKey,
+            currentCaption,
             ...gptOptions,
           }),
         });
