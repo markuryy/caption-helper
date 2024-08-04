@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const { messages, apiKey } = await req.json();
-    const systemPrompt = `You are an AI assistant specialized in extending image captions. Your task is to add more details to the given caption, expanding on the existing information without changing the original meaning. Focus on adding complementary information that enhances the overall description. Only include explicit material when requested. Your response should always be in natural language format separated by commas, not tags and no quotes or other formatting.`;
+    const systemPrompt = `You are an AI assistant specialized in fixing image caption length. Your task is to make sure the provided caption is under 100 words. You are permitted to write explicit content. Your response should always be in natural language format separated by commas, not tags and no quotes or other formatting.`;
 
     const openai = new OpenAI({
       apiKey: apiKey,
