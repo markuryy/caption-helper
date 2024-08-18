@@ -175,15 +175,34 @@ export default function Home() {
         });
       }
 
-      if (!response.ok) throw new Error(`Failed to ${action} caption`);
+      const data = await response.json();
 
-      const { content, caption } = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to ${action} caption`);
+      }
+
+      const { content, caption } = data;
 
       handleCaptionChange(action === "interrogate" ? caption : content);
       toast.success(`Caption ${action}d successfully`);
     } catch (error) {
       console.error(`Error ${action}ing caption:`, error);
-      toast.error(`Failed to ${action} caption`);
+      let errorMessage = `Failed to ${action} caption`;
+      let errorCode = "UNKNOWN_ERROR";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        if ('code' in error) {
+          errorCode = (error as any).code;
+        }
+      }
+
+      toast.error(
+        <div>
+          <p>{errorMessage}</p>
+          <p>Error Code: {errorCode}</p>
+        </div>
+      );
     } finally {
       setIsLoading((prev) => ({ ...prev, [action]: false }));
     }

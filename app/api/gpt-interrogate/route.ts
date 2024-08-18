@@ -29,6 +29,10 @@ export async function POST(req: Request) {
   try {
     const { image, apiKey, customToken, customInstruction, inherentAttributes, currentCaption } = await req.json();
 
+    if (!apiKey) {
+      throw new Error("OpenAI API key is missing");
+    }
+
     const openai = new OpenAI({ apiKey });
 
     let systemPrompt = `
@@ -123,6 +127,19 @@ ${customInstruction}
     });
   } catch (error) {
     console.error("Error processing request:", error);
-    return new Response("Failed to process request", { status: 500 });
+    let errorMessage = "An unknown error occurred";
+    let errorCode = "UNKNOWN_ERROR";
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      if ('code' in error) {
+        errorCode = (error as any).code;
+      }
+    }
+
+    return new Response(JSON.stringify({ error: errorMessage, code: errorCode }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
