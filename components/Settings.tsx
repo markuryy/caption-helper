@@ -42,12 +42,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
     if (savedOpenaiApiKey) setOpenaiApiKey(savedOpenaiApiKey);
     if (savedOllamaEndpoint) setOllamaEndpoint(savedOllamaEndpoint);
     if (savedSelectedModel) setSelectedModel(JSON.parse(savedSelectedModel));
-    if (
-      (savedOpenaiApiKey || savedOllamaEndpoint) &&
-      openaiModels.length === 0 &&
-      ollamaModels.length === 0
-    )
-      handleFetchModels();
+    if (savedOpenaiApiKey || savedOllamaEndpoint) handleFetchModels();
   }, []);
 
   const handleSave = () => {
@@ -59,7 +54,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
   };
 
   const handleFetchModels = async () => {
-    if (openaiModels.length === 0 && ollamaModels.length === 0) {
+    if (openaiModels.length === 0 || ollamaModels.length === 0) {
       try {
         const response = await fetch("/api/available-models", {
           method: "POST",
