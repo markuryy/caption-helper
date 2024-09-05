@@ -51,8 +51,8 @@ export async function POST(req: Request) {
 
       return new Response(
         JSON.stringify({
-          openai: availableOpenaiModels,
-          ollama: availableOllamaModels,
+          openai: availableOpenaiModels || [],
+          ollama: availableOllamaModels || [],
         }),
         {
           status: 200,
