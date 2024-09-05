@@ -49,8 +49,9 @@ export default function Home() {
   useEffect(() => {
     const savedGroqApiKey = localStorage.getItem("groqApiKey");
     const savedOpenaiApiKey = localStorage.getItem("openaiApiKey");
+    const savedOllamaEndpoint = localStorage.getItem("ollamaEndpoint");
 
-    if (!savedGroqApiKey || !savedOpenaiApiKey) {
+    if (!savedGroqApiKey || !savedOpenaiApiKey || !savedOllamaEndpoint) {
       setIsSettingsOpen(true);
     }
   }, []);
@@ -127,17 +128,33 @@ export default function Home() {
     setIsLoading((prev) => ({ ...prev, [action]: true }));
 
     const groqApiKey = localStorage.getItem("groqApiKey");
-    const openaiApiKey = localStorage.getItem("openaiApiKey");
+    const openaiApiKey = localStorage.getItem("openaiApiKey") || "";
+    const ollamaEndpoint = localStorage.getItem("ollamaEndpoint") || "";
+    const selectedModel = JSON.parse(
+      localStorage.getItem("selectedModel") || "{}",
+    );
 
-    if (!groqApiKey && action !== "interrogate") {
-      toast.error("Groq API key not found. Please add it in the settings.");
-      setIsLoading((prev) => ({ ...prev, [action]: false }));
-      return;
-    }
+    const checkApiKeys = () => {
+      if (!groqApiKey && action !== "interrogate") {
+        toast.error("Groq API key not found. Please add it in the settings.");
 
-    if (!openaiApiKey && action === "interrogate") {
-      toast.error("OpenAI API key not found. Please add it in the settings.");
+        return false;
+      }
+
+      if (action === "interrogate" && !openaiApiKey && !ollamaEndpoint) {
+        toast.error(
+          "OpenAI API key or Ollama endpoint not found. Please add atleast one in the settings.",
+        );
+
+        return false;
+      }
+
+      return true;
+    };
+
+    if (!checkApiKeys()) {
       setIsLoading((prev) => ({ ...prev, [action]: false }));
+
       return;
     }
 
@@ -149,12 +166,20 @@ export default function Home() {
       let response;
 
       if (action === "interrogate") {
-        response = await fetch("/api/gpt-interrogate", {
+        let apiEndpoint = "gpt-interrogate";
+
+        if (selectedModel.llmProvider == "ollama") {
+          apiEndpoint = "ollama-interrogate";
+        }
+
+        response = await fetch(`/api/${apiEndpoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             image: images[selectedIndex].content,
-            apiKey: openaiApiKey,
+            apiKey: openaiApiKey || "",
+            ollamaEndpoint: ollamaEndpoint,
+            selectedModel: selectedModel.name,
             currentCaption,
             ...gptOptions,
           }),
@@ -192,7 +217,7 @@ export default function Home() {
 
       if (error instanceof Error) {
         errorMessage = error.message;
-        if ('code' in error) {
+        if ("code" in error) {
           errorCode = (error as any).code;
         }
       }
@@ -201,7 +226,7 @@ export default function Home() {
         <div>
           <p>{errorMessage}</p>
           <p>Error Code: {errorCode}</p>
-        </div>
+        </div>,
       );
     } finally {
       setIsLoading((prev) => ({ ...prev, [action]: false }));
@@ -233,6 +258,7 @@ export default function Home() {
   const handleDeleteImage = () => {
     if (selectedIndex !== null) {
       const newImages = images.filter((_, index) => index !== selectedIndex);
+
       setImages(newImages);
       if (newImages.length === 0) {
         setSelectedIndex(null);
@@ -277,9 +303,9 @@ export default function Home() {
               Settings
             </Button>
             <Button
+              isLoading={isLoading.export}
               startContent={<LuDownload />}
               onClick={() => setIsExportOptionsOpen(true)}
-              isLoading={isLoading.export}
             >
               Export
             </Button>
@@ -317,10 +343,9 @@ export default function Home() {
                       <Button
                         isIconOnly
                         color="danger"
-                        onClick={handleDeleteImage}
                         startContent={<LuTrash2 />}
-                      >
-                      </Button>
+                        onClick={handleDeleteImage}
+                      />
                     </div>
                   </div>
                   <div className="w-full md:w-1/2 pl-4 flex flex-col">
@@ -330,26 +355,26 @@ export default function Home() {
                     />
                     <div className="mt-4 grid grid-cols-2 gap-2">
                       <Button
+                        isLoading={isLoading.enhance}
                         size="sm"
                         startContent={<LuSparkles />}
                         onClick={() => handleCaptionAction("enhance")}
-                        isLoading={isLoading.enhance}
                       >
                         Enhance
                       </Button>
                       <Button
+                        isLoading={isLoading.extend}
                         size="sm"
                         startContent={<LuPlus />}
                         onClick={() => handleCaptionAction("extend")}
-                        isLoading={isLoading.extend}
                       >
                         Extend
                       </Button>
                       <Button
+                        isLoading={isLoading.interrogate}
                         size="sm"
                         startContent={<LuBrainCircuit />}
                         onClick={() => handleCaptionAction("interrogate")}
-                        isLoading={isLoading.interrogate}
                       >
                         Interrogate
                       </Button>

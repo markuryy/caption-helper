@@ -1,24 +1,29 @@
-import OpenAI from "openai";
-import sharp from 'sharp';
+import { Ollama } from "ollama";
+import sharp from "sharp";
 
 export const dynamic = "force-dynamic";
 
-async function downscaleImage(base64Image: string, maxSize: number): Promise<string> {
-  const buffer = Buffer.from(base64Image, 'base64');
+async function downscaleImage(
+  base64Image: string,
+  maxSize: number,
+): Promise<string> {
+  const buffer = Buffer.from(base64Image, "base64");
   const image = sharp(buffer);
   const metadata = await image.metadata();
 
   if (metadata.width && metadata.height) {
     const longerAxis = Math.max(metadata.width, metadata.height);
+
     if (longerAxis > maxSize) {
       const resizedImage = await image
         .resize({
           width: metadata.width > metadata.height ? maxSize : undefined,
           height: metadata.height > metadata.width ? maxSize : undefined,
-          fit: 'inside'
+          fit: "inside",
         })
         .toBuffer();
-      return resizedImage.toString('base64');
+
+      return resizedImage.toString("base64");
     }
   }
 
@@ -27,13 +32,17 @@ async function downscaleImage(base64Image: string, maxSize: number): Promise<str
 
 export async function POST(req: Request) {
   try {
-    const { image, apiKey, customToken, customInstruction, inherentAttributes, selectedModel, currentCaption } = await req.json();
+    const {
+      image,
+      ollamaEndpoint,
+      customToken,
+      customInstruction,
+      inherentAttributes,
+      currentCaption,
+      selectedModel
+    } = await req.json();
 
-    if (!apiKey) {
-      throw new Error("OpenAI API key is missing");
-    }
-
-    const openai = new OpenAI({ apiKey });
+    const ollama = new Ollama({ host: ollamaEndpoint });
 
     let systemPrompt = `
 You are an AI assistant that captions images for training purposes. Your task is to create clear, detailed captions`;
@@ -53,7 +62,7 @@ The following guide outlines the captioning approach:
    - Specific tags (e.g., character name or unique string like "m4n") can reduce impact on the general class while creating strong associations.
 
 ### Caption Structure:
-1. **Globals**: Rare tokens or uniform tags${customToken ? ` (e.g., ${customToken})` : ''}.
+1. **Globals**: Rare tokens or uniform tags${customToken ? ` (e.g., ${customToken})` : ""}.
 1.5. **Natural Language Description**: A concise description shorter than a sentence but longer than a tag describing the entire scene.
 2. **Type/Perspective**:
    - Broad description of the image type and perspective (e.g., "photograph," "full body," "from side").
@@ -85,16 +94,15 @@ ${customInstruction}
 
     const downscaledImage = await downscaleImage(image, 1024);
 
-    let userMessage = "Here is an image for you to describe. Please describe the image in detail and ensure it adheres to the guidelines. Do not include any uncertainty (i.e. I dont know, appears, seems) or any other text. Focus exclusively on visible elements and not conceptual ones.";
+    let userMessage =
+      "Please describe the image in detail and ensure it adheres to the guidelines. Do not include any uncertainty (i.e. I dont know, appears, seems) or any other text. Focus exclusively on visible elements and not conceptual ones.";
 
     if (currentCaption) {
-      userMessage += ` The user says this about the image: "${currentCaption}". Consider this information while creating your caption, but don't simply repeat it. Provide your own detailed description.`;
+      systemPrompt += ` The user says this about the image: "${currentCaption}". Consider this information while creating your caption, but don't simply repeat it. Provide your own detailed description.`;
     }
 
-    userMessage += " Thank you very much for your help!";
-
-    const response = await openai.chat.completions.create({
-      model: selectedModel || "gpt-4o",
+    const response = await ollama.chat({
+      model: selectedModel || "0ssamaak0/xtuner-llava:llama3-8b-v1.1-f16",
       messages: [
         {
           role: "system",
@@ -102,24 +110,13 @@ ${customInstruction}
         },
         {
           role: "user",
-          content: [
-            {
-              type: "text",
-              text: userMessage,
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${downscaledImage}`,
-              },
-            },
-          ],
+          content: userMessage,
+          images: [downscaledImage],
         },
       ],
-      max_tokens: 300,
     });
 
-    const caption = response.choices[0]?.message?.content || "";
+    const caption = response.message?.content.replace("[img0]", "") || "";
 
     return new Response(JSON.stringify({ caption }), {
       status: 200,
@@ -132,14 +129,17 @@ ${customInstruction}
 
     if (error instanceof Error) {
       errorMessage = error.message;
-      if ('code' in error) {
+      if ("code" in error) {
         errorCode = (error as any).code;
       }
     }
 
-    return new Response(JSON.stringify({ error: errorMessage, code: errorCode }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: errorMessage, code: errorCode }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }

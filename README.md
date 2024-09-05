@@ -94,6 +94,7 @@ This document provides technical details about the Caption Helper project, inclu
 - JSZip for creating ZIP files
 - Groq API for caption enhancement and extension
 - OpenAI API (GPT-4o) for image interrogation
+- Ollama API for local image interrogation
 
 ## Project Structure
 
@@ -101,11 +102,15 @@ This document provides technical details about the Caption Helper project, inclu
 caption-helper/
 📦app
  ┣ 📂api
+ ┣ ┃ 📂available-models
+ ┃ ┃ ┗ 📜route.ts
  ┃ ┣ 📂gpt-interrogate
  ┃ ┃ ┗ 📜route.ts
  ┃ ┣ 📂groq-enhance
  ┃ ┃ ┗ 📜route.ts
  ┃ ┗ 📂groq-extend
+ ┃ ┃ ┗ 📜route.ts
+ ┃ ┣ ollama-interrogate
  ┃ ┃ ┗ 📜route.ts
  ┣ 📂blank-page
  ┃ ┣ 📜layout.tsx
@@ -178,6 +183,7 @@ caption-helper/
   - `app/api/groq-enhance/route.ts` for enhancing captions
   - `app/api/groq-extend/route.ts` for extending captions
   - `app/api/gpt-interrogate/route.ts` for generating captions from images
+  - `app/api/ollama-interrogate/route.ts` for generating captions from images using Ollama
 
 ### Image Cropping
 
@@ -206,7 +212,13 @@ caption-helper/
 
 - Used for image interrogation (generating captions from images).
 - Implemented in `app/api/gpt-interrogate/route.ts`.
-- Uses the GPT-4o model for omni-modal capabilities.
+- Uses the selected model for omni-modal capabilities.
+
+### Ollama API
+
+- Used for image interrogation (generating captions from images).
+- Implemented in `app/api/ollama-interrogate/route.ts`.
+- Uses the selected model for omni-modal capabilities.
 
 ## Image Processing
 
