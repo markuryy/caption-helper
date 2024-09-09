@@ -12,8 +12,8 @@ export async function POST(req: Request) {
         JSON.stringify({ models: { openai: [], ollama: [] } }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json" }
-        }
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
             (model) =>
               (model.id.includes("gpt-4o") ||
                 model.id.includes("gpt-4-turbo")) &&
-              !model.id.includes("preview")
+              !model.id.includes("preview"),
           )
           .map((model) => model.id);
       }
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
       if (ollamaResponse.models) {
         availableOllamaModels = ollamaResponse.models.map(
-          (model) => model.name
+          (model) => model.name,
         );
       }
     }
@@ -53,12 +53,12 @@ export async function POST(req: Request) {
     return new Response(
       JSON.stringify({
         openai: availableOpenaiModels || [],
-        ollama: availableOllamaModels || []
+        ollama: availableOllamaModels || [],
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json" }
-      }
+        headers: { "Content-Type": "application/json" },
+      },
     );
   } catch (error) {
     console.error("Error processing request:", error);
@@ -76,8 +76,8 @@ export async function POST(req: Request) {
       JSON.stringify({ error: errorMessage, code: errorCode }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" }
-      }
+        headers: { "Content-Type": "application/json" },
+      },
     );
   }
 }
