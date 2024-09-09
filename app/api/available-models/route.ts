@@ -12,8 +12,8 @@ export async function POST(req: Request) {
         JSON.stringify({ models: { openai: [], ollama: [] } }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
+          headers: { "Content-Type": "application/json" }
+        }
       );
     }
 
@@ -31,35 +31,35 @@ export async function POST(req: Request) {
             (model) =>
               (model.id.includes("gpt-4o") ||
                 model.id.includes("gpt-4-turbo")) &&
-              !model.id.includes("preview"),
+              !model.id.includes("preview")
           )
           .map((model) => model.id);
       }
-
-      if (ollamaEndpoint) {
-        const ollama = new Ollama({ host: ollamaEndpoint });
-
-        const ollamaModels = ollama.list();
-        const ollamaResponse = await ollamaModels;
-
-        if (ollamaResponse.models) {
-          availableOllamaModels = ollamaResponse.models.map(
-            (model) => model.name,
-          );
-        }
-      }
-
-      return new Response(
-        JSON.stringify({
-          openai: availableOpenaiModels || [],
-          ollama: availableOllamaModels || [],
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
     }
+
+    if (ollamaEndpoint) {
+      const ollama = new Ollama({ host: ollamaEndpoint });
+
+      const ollamaModels = ollama.list();
+      const ollamaResponse = await ollamaModels;
+
+      if (ollamaResponse.models) {
+        availableOllamaModels = ollamaResponse.models.map(
+          (model) => model.name
+        );
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        openai: availableOpenaiModels || [],
+        ollama: availableOllamaModels || []
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   } catch (error) {
     console.error("Error processing request:", error);
     let errorMessage = "An unknown error occurred";
@@ -76,8 +76,8 @@ export async function POST(req: Request) {
       JSON.stringify({ error: errorMessage, code: errorCode }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
-      },
+        headers: { "Content-Type": "application/json" }
+      }
     );
   }
 }
